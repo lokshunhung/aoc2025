@@ -73,7 +73,7 @@ mod test {
     use super::*;
 
     #[test]
-    fn d1() {
+    fn d1p1() {
         let pb = path::Path::new(file!()).parent().unwrap().join("input.txt");
         let f = fs::File::open(&pb).unwrap();
         let br = io::BufReader::new(f).lines();
