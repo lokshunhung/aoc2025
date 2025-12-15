@@ -11,13 +11,8 @@ impl Dial {
     }
 
     fn accept(&mut self, line: &Line) {
-        let mut next = self.current;
-        next += line.delta();
-        if next < 0 {
-            next += 100;
-        }
-        next %= 100;
-        self.current = next;
+        let next = self.current + line.delta();
+        self.current = next.rem_euclid(100);
     }
 }
 
