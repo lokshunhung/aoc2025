@@ -19,7 +19,7 @@ fn parse(path: impl AsRef<std::path::Path>) -> Vec<Vec<char>> {
     grid
 }
 
-fn solve_once(grid: &mut Vec<Vec<char>>, cont: &mut bool) -> i32 {
+fn solve_once(grid: &mut [Vec<char>], cont: &mut bool) -> i32 {
     let mut cnt = 0;
 
     for y in 0..grid.len() as isize {
@@ -63,7 +63,7 @@ fn solve_once(grid: &mut Vec<Vec<char>>, cont: &mut bool) -> i32 {
     cnt
 }
 
-fn solve(grid: &mut Vec<Vec<char>>) -> i32 {
+fn solve(grid: &mut [Vec<char>]) -> i32 {
     let mut answer = 0;
     let mut cont: bool;
     loop {
