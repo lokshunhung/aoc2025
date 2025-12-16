@@ -1,23 +1,45 @@
 #![allow(dead_code, unused)]
 
+use std::fs;
+use std::fs::File;
+use std::io;
+use std::io::BufRead;
+use std::io::BufReader;
+use std::io::Lines;
+use std::path;
+use std::path::Path;
+
+struct Fixture(&'static str);
+impl Fixture {
+    fn reader(&self) -> BufReader<File> {
+        let path = Path::new(file!()).parent().unwrap().join(self.0);
+        let file = File::open(&path).unwrap();
+        BufReader::new(file)
+    }
+}
+
+struct Input;
+impl TryFrom<&mut Lines<BufReader<File>>> for Input {
+    type Error = String;
+
+    fn try_from(lines: &mut Lines<BufReader<File>>) -> Result<Self, Self::Error> {
+        for line in lines.map_while(Result::ok) {
+            //
+        }
+
+        Err(format!("cannot parse input {}", "todo"))
+    }
+}
+
 #[cfg(test)]
 mod test {
-    use std::fs;
-    use std::io;
-    use std::io::BufRead;
-    use std::path;
-
     use super::*;
 
     #[test]
     fn test() {
-        let pb = path::Path::new(file!()).parent().unwrap().join("input.txt");
-        let f = fs::File::open(&pb).unwrap();
-        let br = io::BufReader::new(f).lines();
-
-        for line in br.map_while(Result::ok) {
-            //
-        }
+        let fixture = Fixture("input.txt");
+        let mut lines = fixture.reader().lines();
+        let input = Input::try_from(&mut lines);
     }
 }
 
