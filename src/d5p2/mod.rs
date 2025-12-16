@@ -1,5 +1,7 @@
 #![allow(dead_code, unused)]
 
+use std::cmp::Ordering;
+use std::cmp::max;
 use std::collections::HashSet;
 use std::fs;
 use std::fs::File;
@@ -51,14 +53,39 @@ impl TryFrom<&mut Lines<BufReader<File>>> for FreshIngredients {
     }
 }
 impl FreshIngredients {
-    fn fresh_count(&self) -> u64 {
-        let mut set = HashSet::new();
-        for range in &self.ranges {
-            for i in range.clone() {
-                set.insert(i);
+    fn fix_range(self) -> SortedFreshIngredients {
+        let mut ranges = self.ranges;
+        ranges.sort_by(|a, b| a.start().cmp(b.start()).then_with(|| a.end().cmp(b.end())));
+
+        let mut result = vec![ranges[0].clone()];
+
+        for range in ranges.iter().skip(1) {
+            let prev = result.last().unwrap();
+            let curr = range;
+
+            let lo = max(prev.end() + 1, *curr.start());
+            let hi = *curr.end();
+
+            if lo > hi {
+                continue;
             }
+
+            result.push(lo..=hi);
         }
-        set.len() as u64
+
+        SortedFreshIngredients { ranges: result }
+    }
+}
+
+#[derive(Debug)]
+struct SortedFreshIngredients {
+    ranges: Vec<RangeInclusive<u64>>,
+}
+impl SortedFreshIngredients {
+    fn fresh_count(&self) -> u64 {
+        self.ranges
+            .iter()
+            .fold(0, |acc, cur| acc + (*cur.end()) - (*cur.start()) + 1)
     }
 }
 
@@ -67,16 +94,19 @@ mod test {
     use super::*;
 
     #[test]
-    fn d5p1() {
+    fn d5p2() {
         let fixture = Fixture("input.txt");
         let mut lines = fixture.reader().lines();
 
         let fresh = FreshIngredients::try_from(&mut lines).unwrap();
         println!("{:#?}", fresh);
 
-        let answer = fresh.fresh_count();
+        let sorted = fresh.fix_range();
+        println!("{:#?}", sorted);
 
-        assert_eq!(answer, 14);
+        let answer = sorted.fresh_count();
+
+        println!("{}", answer);
     }
 
     #[test]
@@ -84,10 +114,13 @@ mod test {
         let fixture = Fixture("sample.txt");
         let mut lines = fixture.reader().lines();
 
-        let fresh = FreshIngredients::try_from(&mut lines).unwrap();
+        let mut fresh = FreshIngredients::try_from(&mut lines).unwrap();
         println!("{:#?}", fresh);
 
-        let answer = fresh.fresh_count();
+        let sorted = fresh.fix_range();
+        println!("{:#?}", sorted);
+
+        let answer = sorted.fresh_count();
 
         assert_eq!(answer, 14);
     }
