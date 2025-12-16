@@ -23,9 +23,8 @@ fn solve(grid: &[Vec<char>]) -> i32 {
     let mut cnt = 0;
 
     for y in 0..grid.len() as isize {
-        let line = &grid[y as usize];
-        for x in 0..line.len() as isize {
-            let cell = line[x as usize];
+        for x in 0..grid[y as usize].len() as isize {
+            let cell = grid[y as usize][x as usize];
             if cell != '@' {
                 print!("{}", cell);
                 continue;
@@ -37,7 +36,7 @@ fn solve(grid: &[Vec<char>]) -> i32 {
                     if xx == x && yy == y {
                         continue;
                     }
-                    if !(0 <= xx && xx < line.len() as isize) {
+                    if !(0 <= xx && xx < grid[y as usize].len() as isize) {
                         continue;
                     }
                     if !(0 <= yy && yy < grid.len() as isize) {
