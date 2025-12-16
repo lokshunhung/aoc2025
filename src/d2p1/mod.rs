@@ -40,7 +40,7 @@ impl TryFrom<&str> for ProductRange {
 fn is_invalid(n: u64) -> bool {
     let num_digits = n.ilog10() + 1;
 
-    if num_digits % 2 == 1 {
+    if !num_digits.is_multiple_of(2) {
         return false;
     }
 
