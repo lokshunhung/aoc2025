@@ -38,7 +38,7 @@ impl Line {
     }
 }
 
-impl<'a> TryFrom<&'a str> for Line {
+impl TryFrom<&str> for Line {
     type Error = String;
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
