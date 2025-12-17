@@ -51,3 +51,4 @@ pub mod d4p2;
 pub mod d5p1;
 pub mod d5p2;
 pub mod d6p1;
+pub mod d6p2;
