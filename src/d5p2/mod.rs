@@ -3,14 +3,11 @@
 use std::cmp::Ordering;
 use std::cmp::max;
 use std::collections::HashSet;
-use std::fs;
 use std::fs::File;
-use std::io;
 use std::io::BufRead;
 use std::io::BufReader;
 use std::io::Lines;
 use std::ops::RangeInclusive;
-use std::path;
 use std::path::Path;
 
 struct Fixture(&'static str);
@@ -107,6 +104,8 @@ mod test {
         let answer = sorted.fresh_count();
 
         println!("{}", answer);
+
+        assert_eq!(answer, 342018167474526);
     }
 
     #[test]

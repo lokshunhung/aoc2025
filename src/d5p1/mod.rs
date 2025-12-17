@@ -1,13 +1,10 @@
 #![allow(dead_code, unused)]
 
-use std::fs;
 use std::fs::File;
-use std::io;
 use std::io::BufRead;
 use std::io::BufReader;
 use std::io::Lines;
 use std::ops::RangeInclusive;
-use std::path;
 use std::path::Path;
 
 struct Fixture(&'static str);
@@ -83,6 +80,8 @@ mod test {
         }
 
         println!("{}", answer);
+
+        assert_eq!(answer, 643);
     }
 
     #[test]
