@@ -1,5 +1,20 @@
 #![allow(dead_code)]
 
+use std::fs::File;
+use std::io::BufRead;
+use std::io::BufReader;
+use std::io::Lines;
+use std::path::Path;
+
+struct Fixture(&'static str);
+impl Fixture {
+    fn reader(&self) -> BufReader<File> {
+        let path = Path::new(file!()).parent().unwrap().join(self.0);
+        let file = File::open(&path).unwrap();
+        BufReader::new(file)
+    }
+}
+
 #[derive(Debug)]
 struct Dial {
     current: i32,
@@ -80,23 +95,17 @@ impl TryFrom<&str> for Line {
 
 #[cfg(test)]
 mod test {
-    use std::fs;
-    use std::io;
-    use std::io::BufRead;
-    use std::path;
-
     use super::*;
 
     #[test]
     fn d1p2() {
-        let pb = path::Path::new(file!()).parent().unwrap().join("input.txt");
-        let f = fs::File::open(&pb).unwrap();
-        let br = io::BufReader::new(f).lines();
+        let fixture = Fixture("input.txt");
+        let lines = fixture.reader().lines();
 
         let mut dial = Dial::new();
         let mut answer = 0;
 
-        for line in br.map_while(Result::ok) {
+        for line in lines.map_while(Result::ok) {
             let line = line.as_str().try_into().unwrap();
 
             print!("{:?} -> ", dial);
@@ -107,6 +116,8 @@ mod test {
         }
 
         println!("{}", answer);
+
+        assert_eq!(answer, 5933);
     }
 
     #[test]

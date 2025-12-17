@@ -1,8 +1,22 @@
 #![allow(dead_code)]
 
+use std::fs::File;
+use std::io::BufRead;
+use std::io::BufReader;
+use std::io::Lines;
+use std::path::Path;
+
+struct Fixture(&'static str);
+impl Fixture {
+    fn reader(&self) -> BufReader<File> {
+        let path = Path::new(file!()).parent().unwrap().join(self.0);
+        let file = File::open(&path).unwrap();
+        BufReader::new(file)
+    }
+}
+
 #[derive(Debug)]
 struct Bank(Vec<u8>);
-
 impl Bank {
     fn get_largest(&self) -> u64 {
         let mut m1 = self.0.len() - 2;
@@ -19,7 +33,6 @@ impl Bank {
         self.0[m1] as u64 * 10 + self.0[m2] as u64
     }
 }
-
 impl TryFrom<&str> for Bank {
     type Error = String;
 
@@ -35,27 +48,23 @@ impl TryFrom<&str> for Bank {
 
 #[cfg(test)]
 mod test {
-    use std::fs;
-    use std::io;
-    use std::io::BufRead;
-    use std::path;
-
     use super::*;
 
     #[test]
-    fn test() {
-        let pb = path::Path::new(file!()).parent().unwrap().join("input.txt");
-        let f = fs::File::open(&pb).unwrap();
-        let br = io::BufReader::new(f).lines();
+    fn d3p1() {
+        let fixture = Fixture("input.txt");
+        let lines = fixture.reader().lines();
 
         let mut answer = 0;
 
-        for line in br.map_while(Result::ok) {
+        for line in lines.map_while(Result::ok) {
             let bank = Bank::try_from(line.as_str()).unwrap();
             answer += bank.get_largest();
         }
 
         println!("{}", answer);
+
+        assert_eq!(answer, 17452);
     }
 
     #[test]

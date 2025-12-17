@@ -1,5 +1,20 @@
 #![allow(dead_code)]
 
+use std::fs::File;
+use std::io::BufRead;
+use std::io::BufReader;
+use std::io::Lines;
+use std::path::Path;
+
+struct Fixture(&'static str);
+impl Fixture {
+    fn reader(&self) -> BufReader<File> {
+        let path = Path::new(file!()).parent().unwrap().join(self.0);
+        let file = File::open(&path).unwrap();
+        BufReader::new(file)
+    }
+}
+
 #[derive(Debug)]
 struct ProductRange {
     lo: u64,
@@ -53,22 +68,16 @@ fn is_invalid(n: u64) -> bool {
 
 #[cfg(test)]
 mod test {
-    use std::fs;
-    use std::io;
-    use std::io::BufRead;
-    use std::path;
-
     use super::*;
 
     #[test]
     fn d2p1() {
-        let pb = path::Path::new(file!()).parent().unwrap().join("input.txt");
-        let f = fs::File::open(&pb).unwrap();
-        let br = io::BufReader::new(f).lines();
+        let fixture = Fixture("input.txt");
+        let lines = fixture.reader().lines();
 
         let mut answer = 0;
 
-        for line in br.map_while(Result::ok) {
+        for line in lines.map_while(Result::ok) {
             for item in line.split(",") {
                 let pr = ProductRange::try_from(item).unwrap();
                 println!("{:?}", pr);
@@ -77,6 +86,8 @@ mod test {
         }
 
         println!("{}", answer);
+
+        assert_eq!(answer, 52316131093);
     }
 
     #[test]

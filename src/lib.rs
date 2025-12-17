@@ -27,7 +27,7 @@ impl TryFrom<&mut Lines<BufReader<File>>> for Input {
             //
         }
 
-        Err(format!("cannot parse input {}", "todo"))
+        Ok(Input)
     }
 }
 
@@ -39,7 +39,7 @@ mod test {
     fn test() {
         let fixture = Fixture("input.txt");
         let mut lines = fixture.reader().lines();
-        let input = Input::try_from(&mut lines);
+        let input = Input::try_from(&mut lines).unwrap();
     }
 }
 
