@@ -1,5 +1,6 @@
 #![allow(dead_code, unused)]
 
+use std::cmp::max;
 use std::collections::HashSet;
 use std::collections::VecDeque;
 use std::fs::File;
@@ -29,64 +30,47 @@ impl From<BufReader<File>> for Problem {
     }
 }
 impl Problem {
-    fn solve(&mut self) -> i32 {
+    fn solve(&mut self) -> u64 {
         let Self { lines } = self;
-        let depth = lines.len();
-        let mut seen = HashSet::new();
+        let y_size = lines.len();
+        let x_size = lines.first().unwrap().len();
 
-        let (mut deq, width) = {
-            let first_line = lines.first().unwrap();
-            let len = first_line.len();
-            let beam_pos = first_line.find('S').unwrap();
+        let mut dp = vec![vec![0u64; x_size]; y_size];
 
-            let mut deq = VecDeque::new();
-            deq.push_back(vec![beam_pos]);
-            (deq, len)
-        };
-
-        let mut cnt = 0;
-        loop {
-            let Some(mut node) = deq.pop_front() else {
-                break;
-            };
-            if seen.contains(&node) {
-                continue;
-            }
-            seen.insert(node.clone());
-
-            if node.len() == depth {
-                cnt += 1;
-                println!("{:?}", node);
-                continue;
-            }
-
-            let &pos = node.last().unwrap();
-            let next_line = &lines[node.len()];
-
-            match next_line.chars().nth(pos).unwrap() {
-                '.' => {
-                    let mut next_node = node;
-                    next_node.push(pos);
-                    deq.push_front(next_node);
-                    continue;
-                }
-                '^' => {
-                    if pos > 0 {
-                        let mut left_node = node.clone();
-                        left_node.push(pos - 1);
-                        deq.push_front(left_node);
+        for (y, line) in lines.iter().enumerate() {
+            for (x, char) in line.chars().enumerate() {
+                match char {
+                    'S' => {
+                        dp[y][x] = 1;
                     }
-                    if pos < width - 1 {
-                        let mut right_node = node;
-                        right_node.push(pos + 1);
-                        deq.push_front(right_node);
+                    '.' => {
+                        if y > 0 {
+                            dp[y][x] += dp[y - 1][x];
+                        }
                     }
+                    '^' => {
+                        let cols = [
+                            if x > 0 { Some(x - 1) } else { None },
+                            if x < x_size - 1 { Some(x + 1) } else { None },
+                        ];
+                        for &col in cols.iter().flatten() {
+                            let v1 = dp[y][col];
+                            let v2 = dp[y - 1][x] + dp[y][col];
+                            dp[y][col] = max(v1, v2);
+                        }
+                    }
+                    _ => panic!(),
                 }
-                _ => panic!(),
+
+                // for line in &dp {
+                //     println!("{:?}", line);
+                // }
+                // println!("({}, {})", x, y);
+                // println!();
             }
         }
 
-        cnt
+        dp.last().unwrap().iter().sum()
     }
 }
 
@@ -103,7 +87,7 @@ mod test {
 
         println!("{}", answer);
 
-        assert_eq!(answer, 3049);
+        assert_eq!(answer, 231507396180012);
     }
 
     #[test]
