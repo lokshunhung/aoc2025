@@ -68,48 +68,70 @@ impl Input {
             edges.sort_by(|a, b| a.distance.total_cmp(&b.distance));
             edges
         };
-        for edge in &edges {
-            println!(
-                "{}, {} -> {} :: {:?}, {:?}",
-                edge.x, edge.y, edge.distance, junctions[edge.x], junctions[edge.y]
-            );
-        }
+        // for edge in &edges {
+        //     println!(
+        //         "{}, {} -> {} :: {:?}, {:?}",
+        //         edge.x, edge.y, edge.distance, junctions[edge.x], junctions[edge.y]
+        //     );
+        // }
 
         let circuits = {
-            let mut circuits = Vec::new();
+            let mut circuits = BTreeSet::new();
             let mut connections = HashMap::<usize, Rc<RefCell<BTreeSet<usize>>>>::new();
             let mut iter = edges.iter();
             loop {
                 if num_connect == 0 {
                     break;
                 }
-                let Some(&Edge { x, y, .. }) = iter.next() else {
+                let Some(&Edge { distance, x, y }) = iter.next() else {
                     break;
                 };
+                println!("{}, {} -> {} :: {:?}, {:?}", x, y, distance, junctions[x], junctions[y]);
 
                 let xs = connections.get(&x);
                 let ys = connections.get(&y);
 
                 match (xs, ys) {
-                    (Some(_), Some(_)) => todo!(),
+                    (Some(n1), Some(n2)) => {
+                        if n1 == n2 {
+                            println!("[skip]");
+                            continue;
+                        }
+                        num_connect -= 1;
+                        println!("[join] {:?} <- {:?}, rem={}", n1.borrow(), n2.borrow(), num_connect);
+                        circuits.remove(n2);
+                        n1.borrow_mut().extend(n2.borrow().iter());
+                        let n1 = n1.clone();
+                        for &k in n2.clone().borrow().iter() {
+                            connections.insert(k, n1.clone());
+                        }
+                    }
                     (None, Some(nodes)) => {
                         num_connect -= 1;
+                        println!("[appd] {:?} <- {}, rem={}", nodes.borrow(), x, num_connect);
                         nodes.borrow_mut().insert(x);
                         connections.insert(x, nodes.clone());
                     }
                     (Some(nodes), None) => {
+                        println!("[appd] {:?} <- {}, rem={}", nodes.borrow(), y, num_connect);
                         num_connect -= 1;
                         nodes.borrow_mut().insert(y);
                         connections.insert(y, nodes.clone());
                     }
                     (None, None) => {
+                        num_connect -= 1;
                         let nodes = Rc::new(RefCell::new(BTreeSet::from([x, y])));
+                        println!("[init] {:?}, rem={}", nodes.borrow(), num_connect);
                         connections.insert(x, nodes.clone());
                         connections.insert(y, nodes.clone());
-                        circuits.push(nodes);
+                        circuits.insert(nodes);
                     }
                 }
             }
+            for (i, circuit) in circuits.iter().enumerate() {
+                println!("{}: {:?}", i, circuit.borrow());
+            }
+
             circuits
         };
 
